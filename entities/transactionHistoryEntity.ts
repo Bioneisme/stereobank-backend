@@ -11,6 +11,12 @@ export class TransactionHistory extends baseEntity {
     okx_network!: string;
 
     @Property({type: "string"})
+    coin!: string;
+
+    @Property({type: "string"})
+    network!: string;
+
+    @Property({type: "string"})
     caller_id!: string;
 
     @Property({type: "string"})
@@ -33,7 +39,7 @@ export class TransactionHistory extends baseEntity {
 
 
     constructor(user: Users, okx_network: string, caller_id: string, currency_amount: string, status: string,
-                action: string, address: string, amount_with_fee: string, txid: string) {
+                action: string, address: string, amount_with_fee: string, txid: string, coin: string, network: string) {
         super();
         this.user = user;
         this.okx_network = okx_network;
@@ -44,5 +50,7 @@ export class TransactionHistory extends baseEntity {
         this.address = address;
         this.amount_with_fee = amount_with_fee;
         this.txid = txid;
+        this.coin = coin;
+        this.network = network;
     }
 }

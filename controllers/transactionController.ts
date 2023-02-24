@@ -31,7 +31,7 @@ class TransactionController {
     async callback(req: Request, res: Response, next: NextFunction) {
         try {
             const {currency, caller_id, status, action, currency_amount, txid, amount_with_fee, address} = req.body;
-            const {okx_network} = currency;
+            const {okx_network, coin, network} = currency;
             const coinInWallet = okx_network.replace(/[- ]/g, '_').toLowerCase();
             const user = await DI.em.findOne(Users, {id: caller_id.split(":")[0]});
             if (!user) {
@@ -50,6 +50,8 @@ class TransactionController {
                     address,
                     amount_with_fee,
                     okx_network,
+                    coin,
+                    network,
                     user
                 });
             } else {
@@ -105,7 +107,8 @@ class TransactionController {
                 {
                     coin,
                     network,
-                    caller_id
+                    caller_id,
+                    callback_url: `${SERVER_URL}/api/transactions/callback`
                 }, {
                     headers: {
                         Authorization: 'Bearer ' + API_KEY,
@@ -175,6 +178,33 @@ class TransactionController {
                             +noExponents(+currency_amount)).toString()
                     });
                     await DI.em.persistAndFlush(wallet);
+                    const data = result.data;
+                    let transaction = await DI.em.findOne(TransactionHistory, {txid: data.txid});
+                    if (!transaction) {
+                        transaction = DI.em.create(TransactionHistory, {
+                            caller_id: '-',
+                            status: data.status,
+                            action: 'withdrawal',
+                            currency_amount: data.currency_amount,
+                            txid: data.txid,
+                            address: data.address_out,
+                            amount_with_fee: data.currency_network_fee,
+                            okx_network,
+                            coin,
+                            network,
+                            user
+                        });
+                    } else {
+                        wrap(transaction).assign({
+                            status: data.status,
+                            action: 'withdrawal',
+                            currency_amount: data.currency_amount,
+                            txid: data.txid,
+                            address: data.address_out,
+                            amount_with_fee: data.currency_network_fee
+                        });
+                    }
+                    await DI.em.persistAndFlush(transaction);
                     logger.info(`sendCrypto: ${result.data}`);
                     res.json({error: false, result: result.data});
                     return next();
@@ -214,6 +244,23 @@ class TransactionController {
             return next();
         } catch (e) {
             logger.error(`getBalance: ${e}`);
+            res.status(500).json({error: true, message: e});
+            next();
+        }
+    }
+
+    async getTransactions(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {user} = req as UserRequest;
+            if (!user) {
+                res.status(400).json({error: true, message: "user_not_found"});
+                return next();
+            }
+            const transactions = await DI.em.find(TransactionHistory, {user}, {orderBy: {created_at: 'DESC'}});
+            res.json({error: false, transactions});
+            return next();
+        } catch (e) {
+            logger.error(`getTransactions: ${e}`);
             res.status(500).json({error: true, message: e});
             next();
         }
