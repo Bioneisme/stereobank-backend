@@ -30,7 +30,7 @@ function noExponents(num: number) {
 class TransactionController {
     async callback(req: Request, res: Response, next: NextFunction) {
         try {
-            const {currency, caller_id, status, action, currency_amount, txid, amount_with_fee, address} = req.body;
+            const {currency, caller_id, status, action, currency_amount, txid, address} = req.body;
             const {okx_network, coin, network} = currency;
             const coinInWallet = okx_network.replace(/[- ]/g, '_').toLowerCase();
             const user = await DI.em.findOne(Users, {id: caller_id.split(":")[0]});
@@ -48,7 +48,6 @@ class TransactionController {
                     currency_amount,
                     txid,
                     address,
-                    amount_with_fee,
                     okx_network,
                     coin,
                     network,
@@ -61,7 +60,6 @@ class TransactionController {
                     currency_amount,
                     txid,
                     address,
-                    amount_with_fee,
                     okx_network
                 });
             }
@@ -74,7 +72,7 @@ class TransactionController {
                 });
             }
 
-            if (status == 'success' && action == 'deposit') {
+            if (status == 'accepted' && action == 'deposit') {
                 wrap(wallet).assign({
                     [coinInWallet]: (+noExponents(+wallet[coinInWallet as keyof typeof wallet.ada_cardano] || 0) +
                         +noExponents(+currency_amount)).toString()
@@ -188,7 +186,6 @@ class TransactionController {
                             currency_amount: data.currency_amount,
                             txid: data.txid,
                             address: data.address_out,
-                            amount_with_fee: data.currency_network_fee,
                             okx_network,
                             coin,
                             network,
@@ -200,8 +197,7 @@ class TransactionController {
                             action: 'withdrawal',
                             currency_amount: data.currency_amount,
                             txid: data.txid,
-                            address: data.address_out,
-                            amount_with_fee: data.currency_network_fee
+                            address: data.address_out
                         });
                     }
                     await DI.em.persistAndFlush(transaction);
