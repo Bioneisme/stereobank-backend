@@ -15,3 +15,13 @@ export const JWT_REFRESH_SECRET: string = process.env.JWT_REFRESH_SECRET || DEFA
 export const CLIENT_URL: string = process.env.CLIENT_URL || DEFAULT_CLIENT_URL;
 export const API_KEY: string = process.env.API_KEY as string;
 export const SERVER_URL: string = process.env.SERVER_URL || DEFAULT_SERVER_URL;
+export const EXPIRY_TIME: number = +(process.env.EXPIRY_TIME || 60 * 10);
+const REDIS_HOST: string = process.env.REDIS_HOST || 'localhost';
+const REDIS_PORT: number = +(process.env.REDIS_PORT || 6379);
+const REDIS_PASSWORD: string = process.env.REDIS_PASSWORD || '';
+
+export const REDIS = {
+    host: REDIS_HOST,
+    port: REDIS_PORT,
+    password: REDIS_PASSWORD
+}

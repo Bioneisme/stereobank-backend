@@ -8,9 +8,11 @@ import logger from "./config/logger";
 import express, {Application} from "express";
 import {EntityManager, MikroORM} from "@mikro-orm/core";
 import {writeDateLogging, logging} from "./middlewares/loggingMiddleware";
+import {init_cache} from "./config/cache";
 
 const app: Application = express();
 
+init_cache();
 export const DI = {} as {
     orm: MikroORM,
     em: EntityManager
