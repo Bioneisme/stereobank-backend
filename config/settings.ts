@@ -14,6 +14,7 @@ export const JWT_ACCESS_SECRET: string = process.env.JWT_ACCESS_SECRET || DEFAUL
 export const JWT_REFRESH_SECRET: string = process.env.JWT_REFRESH_SECRET || DEFAULT_JWT_REFRESH_SECRET;
 export const CLIENT_URL: string = process.env.CLIENT_URL || DEFAULT_CLIENT_URL;
 export const API_KEY: string = process.env.API_KEY as string;
+export const TURBO_SMS: string = process.env.TURBO_SMS_API_KEY as string;
 export const SERVER_URL: string = process.env.SERVER_URL || DEFAULT_SERVER_URL;
 export const EXPIRY_TIME: number = +(process.env.EXPIRY_TIME || 60 * 10);
 const REDIS_HOST: string = process.env.REDIS_HOST || 'localhost';

@@ -6,7 +6,8 @@ import {Tokens, Users, Wallets} from "../entities";
 import tokenService from "../services/tokenService";
 import {hash, compare} from "bcryptjs";
 import {redis} from "../config/cache";
-import {EXPIRY_TIME} from "../config/settings";
+import {EXPIRY_TIME, TURBO_SMS} from "../config/settings";
+import axios from "axios";
 
 function generateRandomCode(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -20,18 +21,34 @@ class UserController {
                 res.status(400).json({error: true, message: "phone_required"});
                 return next();
             }
-
             const code = generateRandomCode(1000, 9999);
-            console.log(code)
-            await redis.setEx(phone, EXPIRY_TIME, code.toString());
-            res.json({error: false, message: "code_sent"});
-            return next();
+            logger.info(`sendCode: ${code}`);
+            return axios.post("https://api.turbosms.ua/message/send.json", {
+                "recipients": [phone],
+                "sms": {
+                    "sender": "IT Alarm",
+                    "text": `Your code is: ${code}`
+                }
+            }, {
+                headers: {
+                    Authorization: `Bearer ${TURBO_SMS}`
+                }
+            }).then(async result => {
+                await redis.setEx(phone, EXPIRY_TIME, code.toString());
+                res.json({error: false, message: "code_sent"});
+                return next();
+            }).catch(e => {
+                logger.error(`sendCode: ${e}`);
+                res.status(500).json({error: true, message: e});
+                return next();
+            });
         } catch (e) {
             logger.error(`sendCode: ${e}`);
             res.status(500).json({error: true, message: e});
             next();
         }
     }
+
     async register(req: Request, res: Response, next: NextFunction) {
         try {
             const {email, phone, name, password, code} = req.body;
