@@ -185,6 +185,7 @@ class UserController {
                 user.photo_url = photoURL;
                 user.name = displayName;
                 user.phone = phoneNumber;
+                user.is_google = true;
             }
 
             await DI.em.persistAndFlush(user);
