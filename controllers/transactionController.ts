@@ -231,10 +231,12 @@ class TransactionController {
                 res.status(400).json({error: true, message: "user_not_found"});
                 return next();
             }
-            const wallet = await DI.em.findOne(Wallets, {user_id: user});
+            let wallet = await DI.em.findOne(Wallets, {user_id: user});
             if (!wallet) {
-                res.status(400).json({error: true, message: "wallet_not_found"});
-                return next();
+                wallet = DI.em.create(Wallets, {
+                    user_id: user.id
+                });
+                await DI.em.persistAndFlush(wallet);
             }
             res.json({error: false, wallet});
             return next();
