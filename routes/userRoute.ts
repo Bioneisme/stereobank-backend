@@ -10,6 +10,7 @@ router.post("/register", userController.register);
 router.post("/sendCode", userController.sendCode);
 router.post("/findUser", userController.findUser);
 router.post("/login", userController.login);
+router.post("/googleSignIn", userController.googleSignIn);
 router.get("/logout", userController.logout);
 router.get("/refresh", userController.refresh);
 

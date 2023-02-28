@@ -2,10 +2,12 @@ CREATE TABLE users
 (
     id         int          NOT NULL AUTO_INCREMENT PRIMARY KEY,
     name       varchar(255) NOT NULL,
-    phone      varchar(20)  NOT NULL,
+    phone      varchar(20),
     email      varchar(100) NOT NULL,
-    password   varchar(255) NOT NULL,
-    caller_id  varchar(255) NOT NULL,
+    password   varchar(255),
+    caller_id  varchar(255),
+    is_google  boolean DEFAULT false,
+    photo_url  varchar(255),
     created_at character varying(50),
     updated_at character varying(50)
 );
@@ -48,18 +50,18 @@ CREATE TABLE wallets
 
 CREATE TABLE transaction_history
 (
-    id         int                   NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    user_id    integer               NOT NULL,
-    okx_network character varying(20) NOT NULL,
-    coin character varying(20) NOT NULL,
-    network character varying(20) NOT NULL,
-    caller_id character varying(100) NOT NULL,
+    id              int                    NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id         integer                NOT NULL,
+    okx_network     character varying(20)  NOT NULL,
+    coin            character varying(20)  NOT NULL,
+    network         character varying(20)  NOT NULL,
+    caller_id       character varying(100) NOT NULL,
     currency_amount character varying(255) NOT NULL,
-    status character varying(20),
-    action character varying(20),
-    address character varying(255),
-    txid character varying(255),
-    created_at character varying(50) NOT NULL,
-    updated_at character varying(50) NOT NULL,
+    status          character varying(20),
+    action          character varying(20),
+    address         character varying(255),
+    txid            character varying(255),
+    created_at      character varying(50)  NOT NULL,
+    updated_at      character varying(50)  NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id)
 );

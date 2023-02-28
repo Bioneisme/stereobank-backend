@@ -132,13 +132,14 @@ class UserController {
         try {
             const {log, password} = req.body;
             const user = await DI.em.findOne(Users, {
-                $or: [{phone: log}, {email: log}]
+                $or: [{phone: log}, {email: log}],
+                is_google: false
             });
             if (!user) {
                 res.status(400).json({error: true, message: "user_not_found"});
                 return next();
             }
-            const isMatch = await compare(password, user.password);
+            const isMatch = await compare(password, user.password || "");
             if (!isMatch) {
                 res.status(400).json({error: true, message: "invalid_password"});
                 return next();
@@ -155,6 +156,50 @@ class UserController {
             return next();
         } catch (e) {
             logger.error(`login: ${e}`);
+            res.status(500).json({error: true, message: e});
+            next();
+        }
+    }
+
+    async googleSignIn(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {displayName, email, photoURL, phoneNumber} = req.body;
+            if (!email) {
+                res.status(400).json({error: true, message: "missing_fields"});
+                return next();
+            }
+            let user = await DI.em.findOne(Users, {
+                email,
+                is_google: true
+            });
+            if (!user) {
+                user = DI.em.create(Users, {
+                    name: displayName,
+                    email,
+                    phone: phoneNumber,
+                    caller_id: "",
+                    is_google: true,
+                    photo_url: photoURL
+                });
+            } else {
+                user.photo_url = photoURL;
+                user.name = displayName;
+                user.phone = phoneNumber;
+            }
+
+            await DI.em.persistAndFlush(user);
+            const tokens = tokenService.generateTokens(user.id);
+            await tokenService.saveToken(user.id, tokens.refreshToken);
+
+            res.cookie("refreshToken", tokens.refreshToken, {
+                maxAge: 30 * 24 * 60 * 60 * 1000,
+                httpOnly: true
+            });
+
+            res.json({error: false, ...tokens, user});
+            return next();
+        } catch (e) {
+            logger.error(`googleSignIn: ${e}`);
             res.status(500).json({error: true, message: e});
             next();
         }
