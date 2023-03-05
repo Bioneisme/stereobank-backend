@@ -7,6 +7,7 @@ const router: Router = Router();
 
 router.post("/callback", transactionController.callback);
 router.post("/createAddress", authMiddleware, transactionController.createAddress);
+router.post("/createDonationAddress", transactionController.createDonationAddress);
 router.post("/sendCrypto", authMiddleware, transactionController.sendCrypto);
 router.get("/getBalance", authMiddleware, transactionController.getBalance);
 router.get("/getTransactions", authMiddleware, transactionController.getTransactions);

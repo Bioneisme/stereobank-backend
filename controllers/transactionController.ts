@@ -133,6 +133,42 @@ class TransactionController {
         }
     }
 
+    async createDonationAddress(req: Request, res: Response, next: NextFunction) {
+        try {
+            const caller_id = `donation:${uuidv4()}`;
+            const {coin, network} = req.body;
+            return axios.post('https://api.cryptoamlnode.com/api/v1/deposits',
+                {
+                    coin,
+                    network,
+                    caller_id,
+                    callback_url: `${SERVER_URL}/api/transactions/callback`
+                }, {
+                    headers: {
+                        Authorization: 'Bearer ' + API_KEY,
+                        'Content-Type': 'application/json'
+                    }
+                }).then(result => {
+                if (result.status === 200) {
+                    res.json({error: false, result: result.data});
+                    return next();
+                } else {
+                    res.status(500).json({error: true, message: result.data});
+                    return next();
+                }
+            }).catch(e => {
+                logger.error(`createDonationAddress: ${e}`);
+                console.log(e)
+                res.status(500).json({error: true, message: e});
+                return next();
+            })
+        } catch (e) {
+            logger.error(`createDonationAddress: ${e}`);
+            res.status(500).json({error: true, message: e});
+            next();
+        }
+    }
+
     async sendCrypto(req: Request, res: Response, next: NextFunction) {
         try {
             const {coin, network, okx_network, currency_amount, address} = req.body;
