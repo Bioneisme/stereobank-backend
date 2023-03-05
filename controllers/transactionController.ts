@@ -263,6 +263,23 @@ class TransactionController {
             next();
         }
     }
+
+    async getCurrencies(req: Request, res: Response, next: NextFunction) {
+        try {
+            const result = await axios.get('https://api.cryptoamlnode.com/api/v1/deposits/currencies');
+            if (!result.data) {
+                res.status(400).json({error: true, message: "no_data"});
+                return next();
+            }
+
+            res.json({error: false, data: result.data.currencies});
+            return next();
+        } catch (e) {
+            logger.error(`getCurrencies: ${e}`);
+            res.status(500).json({error: true, message: e});
+            next();
+        }
+    }
 }
 
 export default new TransactionController();

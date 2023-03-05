@@ -10,5 +10,6 @@ router.post("/createAddress", authMiddleware, transactionController.createAddres
 router.post("/sendCrypto", authMiddleware, transactionController.sendCrypto);
 router.get("/getBalance", authMiddleware, transactionController.getBalance);
 router.get("/getTransactions", authMiddleware, transactionController.getTransactions);
+router.get("/getCurrencies", transactionController.getCurrencies);
 
 export default router;
