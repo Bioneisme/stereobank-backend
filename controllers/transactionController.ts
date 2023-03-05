@@ -141,8 +141,7 @@ class TransactionController {
                 {
                     coin,
                     network,
-                    caller_id,
-                    callback_url: `${SERVER_URL}/api/transactions/callback`
+                    caller_id
                 }, {
                     headers: {
                         Authorization: 'Bearer ' + API_KEY,
