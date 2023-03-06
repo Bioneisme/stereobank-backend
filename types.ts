@@ -8,3 +8,15 @@ export enum ContactStatus {
     accepted = 1,
     rejected = -1,
 }
+
+export enum FiatStatus {
+    new = 0,
+    success = 1,
+    failed = 2,
+    canceled = 3,
+    timeout = 4,
+    refund = 5,
+    chargeback = 6,
+    processing = 10,
+    verification = 12
+}

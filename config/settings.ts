@@ -20,9 +20,18 @@ export const EXPIRY_TIME: number = +(process.env.EXPIRY_TIME || 60 * 10);
 const REDIS_HOST: string = process.env.REDIS_HOST || 'localhost';
 const REDIS_PORT: number = +(process.env.REDIS_PORT || 6379);
 const REDIS_PASSWORD: string = process.env.REDIS_PASSWORD || '';
+const PSP_PUBLIC_KEY: string = process.env.PSP_PUBLIC_KEY || '';
+const PSP_PRIVATE_KEY: string = process.env.PSP_PRIVATE_KEY || '';
+const PSP_BASE_URL: string = process.env.PSP_BASE_URL || '';
 
 export const REDIS = {
     host: REDIS_HOST,
     port: REDIS_PORT,
     password: REDIS_PASSWORD
+}
+
+export const PSP = {
+    publicKey: PSP_PUBLIC_KEY,
+    privateKey: PSP_PRIVATE_KEY,
+    baseUrl: PSP_BASE_URL
 }

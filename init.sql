@@ -44,6 +44,9 @@ CREATE TABLE wallets
     waves_waves          character varying(100) not null default '0',
     dot_polkadot         character varying(100) not null default '0',
     xtz_tezos            character varying(100) not null default '0',
+    uah                 character varying(100) not null default '0',
+    usd                 character varying(100) not null default '0',
+    eur                 character varying(100) not null default '0',
     PRIMARY KEY (user_id),
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
@@ -52,15 +55,18 @@ CREATE TABLE transaction_history
 (
     id              int                    NOT NULL AUTO_INCREMENT PRIMARY KEY,
     user_id         integer                NOT NULL,
-    okx_network     character varying(20)  NOT NULL,
+    okx_network     character varying(20),
     coin            character varying(20)  NOT NULL,
-    network         character varying(20)  NOT NULL,
-    caller_id       character varying(100) NOT NULL,
+    network         character varying(20),
+    caller_id       character varying(100),
     currency_amount character varying(255) NOT NULL,
     status          character varying(20),
     action          character varying(20),
     address         character varying(255),
     txid            character varying(255),
+    charge_amount  character varying(255),
+    is_fiat         boolean                DEFAULT false,
+    verify_url     character varying(255),
     created_at      character varying(50)  NOT NULL,
     updated_at      character varying(50)  NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id)
