@@ -28,10 +28,10 @@ export class Users extends baseEntity {
     caller_id?: string;
 
     @Property({type: Users, nullable: true})
-    referral?: Users;
+    referral_id?: Users;
 
     constructor(name: string, phone: string, email: string, password: string, caller_id: string, is_google: boolean,
-                photo_url: string, referral: Users, promo_code: string) {
+                photo_url: string, referral_id: Users, promo_code: string) {
         super();
         this.name = name;
         this.phone = phone;
@@ -41,6 +41,6 @@ export class Users extends baseEntity {
         this.promo_code = promo_code;
         this.is_google = is_google;
         this.photo_url = photo_url;
-        this.referral = referral;
+        this.referral_id = referral_id;
     }
 }
