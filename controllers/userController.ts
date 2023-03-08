@@ -298,7 +298,7 @@ class UserController {
                 });
                 await DI.em.persistAndFlush(user_wallet);
             }
-            res.json({error: false, message: "promo_activated"});
+            res.json({error: false, user, message: "promo_activated"});
             return next();
         } catch (e) {
             logger.error(`activatePromo: ${e}`);
