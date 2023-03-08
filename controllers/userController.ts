@@ -276,6 +276,10 @@ class UserController {
                 res.status(400).json({error: true, message: "promo_invalid"});
                 return next();
             }
+            if (promo_owner.id === user.id) {
+                res.status(400).json({error: true, message: "user_is_owner"});
+                return next();
+            }
             wrap(user).assign({referral: promo_owner});
             await DI.em.persistAndFlush(user);
             const owner_wallet = await DI.em.findOne(Wallets, {user_id: promo_owner.id});
