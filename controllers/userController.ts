@@ -138,7 +138,7 @@ class UserController {
             const user = await DI.em.findOne(Users, {
                 $or: [{phone: log}, {email: log}],
                 is_google: false
-            });
+            }, {populate: true});
             if (!user) {
                 res.status(400).json({error: true, message: "user_not_found"});
                 return next();
@@ -175,7 +175,7 @@ class UserController {
             let user = await DI.em.findOne(Users, {
                 email,
                 is_google: true
-            });
+            }, {populate: true});
             if (!user) {
                 user = DI.em.create(Users, {
                     name: displayName,
