@@ -290,6 +290,14 @@ class UserController {
                 });
                 await DI.em.persistAndFlush(owner_wallet);
             }
+            const user_wallet = await DI.em.findOne(Wallets, {user_id: user.id});
+            if (user_wallet) {
+                wrap(user_wallet).assign({
+                    bonus_uah: (+noExponents(+(user_wallet.bonus_uah || 0)) +
+                        +noExponents(186)).toString()
+                });
+                await DI.em.persistAndFlush(user_wallet);
+            }
             res.json({error: false, message: "promo_activated"});
             return next();
         } catch (e) {
