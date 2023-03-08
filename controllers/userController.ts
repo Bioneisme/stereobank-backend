@@ -8,6 +8,9 @@ import {hash, compare} from "bcryptjs";
 import {redis} from "../config/cache";
 import {EXPIRY_TIME, TURBO_SMS} from "../config/settings";
 import axios from "axios";
+import generatePromo from "../utils/promo";
+import {wrap} from "@mikro-orm/core";
+import {noExponents} from "../utils/noExponents";
 
 function generateRandomCode(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -78,7 +81,8 @@ class UserController {
                     phone,
                     email,
                     caller_id: "",
-                    password: hashedPassword
+                    password: hashedPassword,
+                    promo_code: generatePromo()
                 });
                 await DI.em.persistAndFlush(user);
 
@@ -179,7 +183,8 @@ class UserController {
                     phone: phoneNumber,
                     caller_id: "",
                     is_google: true,
-                    photo_url: photoURL
+                    photo_url: photoURL,
+                    promo_code: generatePromo()
                 });
             } else {
                 user.photo_url = photoURL;
@@ -249,6 +254,42 @@ class UserController {
             return next();
         } catch (e) {
             logger.error(`refresh: ${e}`);
+            res.status(500).json({error: true, message: e});
+            next();
+        }
+    }
+
+    async activatePromo(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {promo_code} = req.body;
+            const {user} = req as UserRequest;
+            if (!user || user.referral) {
+                res.status(401).json({error: true, message: "user_not_found"});
+                return next();
+            }
+            if (!promo_code) {
+                res.status(400).json({error: true, message: "missing_fields"});
+                return next();
+            }
+            const promo_owner = await DI.em.findOne(Users, {promo_code});
+            if (!promo_owner) {
+                res.status(400).json({error: true, message: "promo_invalid"});
+                return next();
+            }
+            wrap(user).assign({referral: promo_owner});
+            await DI.em.persistAndFlush(user);
+            const owner_wallet = await DI.em.findOne(Wallets, {user_id: promo_owner.id});
+            if (owner_wallet) {
+                wrap(owner_wallet).assign({
+                    bonus_uah: (+noExponents(+(owner_wallet.bonus_uah || 0)) +
+                        +noExponents(186)).toString()
+                });
+                await DI.em.persistAndFlush(owner_wallet);
+            }
+            res.json({error: false, message: "promo_activated"});
+            return next();
+        } catch (e) {
+            logger.error(`activatePromo: ${e}`);
             res.status(500).json({error: true, message: e});
             next();
         }

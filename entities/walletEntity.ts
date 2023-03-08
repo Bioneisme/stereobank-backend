@@ -67,6 +67,9 @@ export class Wallets {
     uah?: string;
 
     @Property({type: "string"})
+    bonus_uah?: string;
+
+    @Property({type: "string"})
     usd?: string;
 
     @Property({type: "string"})

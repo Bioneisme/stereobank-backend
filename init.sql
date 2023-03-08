@@ -2,14 +2,17 @@ CREATE TABLE users
 (
     id         int          NOT NULL AUTO_INCREMENT PRIMARY KEY,
     name       varchar(255) NOT NULL,
+    promo_code varchar(255) NOT NULL,
     phone      varchar(20),
     email      varchar(100) NOT NULL,
     password   varchar(255),
     caller_id  varchar(255),
     is_google  boolean DEFAULT false,
     photo_url  varchar(255),
+    referral_id   integer,
     created_at character varying(50),
-    updated_at character varying(50)
+    updated_at character varying(50),
+    FOREIGN KEY (referral_id) REFERENCES users (id)
 );
 
 CREATE TABLE tokens
@@ -44,9 +47,10 @@ CREATE TABLE wallets
     waves_waves          character varying(100) not null default '0',
     dot_polkadot         character varying(100) not null default '0',
     xtz_tezos            character varying(100) not null default '0',
-    uah                 character varying(100) not null default '0',
-    usd                 character varying(100) not null default '0',
-    eur                 character varying(100) not null default '0',
+    uah                  character varying(100) not null default '0',
+    bonus_uah            character varying(100) not null default '0',
+    usd                  character varying(100) not null default '0',
+    eur                  character varying(100) not null default '0',
     PRIMARY KEY (user_id),
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
@@ -64,9 +68,9 @@ CREATE TABLE transaction_history
     action          character varying(20),
     address         character varying(255),
     txid            character varying(255),
-    charge_amount  character varying(255),
-    is_fiat         boolean                DEFAULT false,
-    verify_url     character varying(255),
+    charge_amount   character varying(255),
+    is_fiat         boolean DEFAULT false,
+    verify_url      character varying(255),
     created_at      character varying(50)  NOT NULL,
     updated_at      character varying(50)  NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id)

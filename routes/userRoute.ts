@@ -13,5 +13,6 @@ router.post("/login", userController.login);
 router.post("/googleSignIn", userController.googleSignIn);
 router.get("/logout", userController.logout);
 router.get("/refresh", userController.refresh);
+router.post("/activatePromo", authMiddleware, userController.activatePromo);
 
 export default router;

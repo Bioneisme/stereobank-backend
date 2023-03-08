@@ -9,6 +9,9 @@ export class Users extends baseEntity {
     @Property({type: "string"})
     email!: string;
 
+    @Property({type: "string"})
+    promo_code!: string;
+
     @Property({type: "string", nullable: true})
     phone?: string;
 
@@ -24,14 +27,20 @@ export class Users extends baseEntity {
     @Property({type: "string", nullable: true})
     caller_id?: string;
 
-    constructor(name: string, phone: string, email: string, password: string, caller_id: string, is_google: boolean, photo_url: string) {
+    @Property({type: Users, nullable: true})
+    referral?: Users;
+
+    constructor(name: string, phone: string, email: string, password: string, caller_id: string, is_google: boolean,
+                photo_url: string, referral: Users, promo_code: string) {
         super();
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.password = password;
         this.caller_id = caller_id;
+        this.promo_code = promo_code;
         this.is_google = is_google;
         this.photo_url = photo_url;
+        this.referral = referral;
     }
 }
