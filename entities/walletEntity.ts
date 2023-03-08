@@ -79,7 +79,7 @@ export class Wallets {
                 usdc_erc20: string = "0", usdc_trc20: string = "0", matic_erc20: string = "0", trx_trc20: string = "0", matic_polygon: string = "0",
                 dai_erc20: string = "0", ltc_litecoin: string = "0", etc_ethereum_classic: string = "0", ada_cardano: string = "0",
                 sol_solana: string = "0", doge_dogecoin: string = "0", bch_bitcoincash: string = "0", waves_waves: string = "0",
-                dot_polkadot: string = "0", xtz_tezos: string = "0", uah: string = "0", usd: string = "0", eur: string = "0") {
+                dot_polkadot: string = "0", xtz_tezos: string = "0", uah: string = "0", usd: string = "0", eur: string = "0", bonus_uah: string = "0") {
         this.user_id = user_id;
         this.btc_bitcoin = btc_bitcoin;
         this.usdt_trc20 = usdt_trc20;
@@ -101,6 +101,7 @@ export class Wallets {
         this.dot_polkadot = dot_polkadot;
         this.xtz_tezos = xtz_tezos;
         this.uah = uah;
+        this.bonus_uah = bonus_uah;
         this.usd = usd;
         this.eur = eur;
     }
