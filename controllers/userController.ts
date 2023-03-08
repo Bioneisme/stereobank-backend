@@ -2,7 +2,7 @@ import logger from "../config/logger";
 import {DI} from "../index";
 import {NextFunction, Request, Response} from "express";
 import {UserRequest} from "../types";
-import {Tokens, Users, Wallets} from "../entities";
+import {Tokens, TransactionHistory, Users, Wallets} from "../entities";
 import tokenService from "../services/tokenService";
 import {hash, compare} from "bcryptjs";
 import {redis} from "../config/cache";
@@ -289,6 +289,17 @@ class UserController {
                         +noExponents(186)).toString()
                 });
                 await DI.em.persistAndFlush(owner_wallet);
+                const transaction = DI.em.create(TransactionHistory, {
+                    user: promo_owner.id,
+                    currency_amount: "186",
+                    charge_amount: "186",
+                    action: "bonus",
+                    coin: "UAH",
+                    status: "success",
+                    is_fiat: true,
+                    caller_id: " "
+                });
+                await DI.em.persistAndFlush(transaction);
             }
             const user_wallet = await DI.em.findOne(Wallets, {user_id: user.id});
             if (user_wallet) {
@@ -297,6 +308,17 @@ class UserController {
                         +noExponents(186)).toString()
                 });
                 await DI.em.persistAndFlush(user_wallet);
+                const transaction = DI.em.create(TransactionHistory, {
+                    user: user.id,
+                    currency_amount: "186",
+                    charge_amount: "186",
+                    action: "bonus",
+                    coin: "UAH",
+                    status: "success",
+                    is_fiat: true,
+                    caller_id: " "
+                });
+                await DI.em.persistAndFlush(transaction);
             }
             res.json({error: false, user, message: "promo_activated"});
             return next();
