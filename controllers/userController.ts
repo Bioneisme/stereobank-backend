@@ -280,13 +280,13 @@ class UserController {
                 res.status(400).json({error: true, message: "user_is_owner"});
                 return next();
             }
-            const usdt_amount = 3;
+            const usdt_amount = 5;
             wrap(user).assign({referral_id: promo_owner});
             await DI.em.persistAndFlush(user);
             const owner_wallet = await DI.em.findOne(Wallets, {user_id: promo_owner.id});
             if (owner_wallet) {
                 wrap(owner_wallet).assign({
-                    bonus_uah: (+noExponents(+(owner_wallet.usdt_trc20 || 0)) +
+                    usdt_trc20: (+noExponents(+(owner_wallet.usdt_trc20 || 0)) +
                         +noExponents(usdt_amount)).toString()
                 });
                 await DI.em.persistAndFlush(owner_wallet);
@@ -307,7 +307,7 @@ class UserController {
             const user_wallet = await DI.em.findOne(Wallets, {user_id: user.id});
             if (user_wallet) {
                 wrap(user_wallet).assign({
-                    bonus_uah: (+noExponents(+(user_wallet.usdt_trc20 || 0)) +
+                    usdt_trc20: (+noExponents(+(user_wallet.usdt_trc20 || 0)) +
                         +noExponents(usdt_amount)).toString()
                 });
                 await DI.em.persistAndFlush(user_wallet);
