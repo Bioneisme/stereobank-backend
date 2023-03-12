@@ -14,5 +14,6 @@ router.post("/googleSignIn", userController.googleSignIn);
 router.get("/logout", userController.logout);
 router.get("/refresh", userController.refresh);
 router.post("/activatePromo", authMiddleware, userController.activatePromo);
+router.get("/getReferrals", authMiddleware, userController.getMyReferrals);
 
 export default router;

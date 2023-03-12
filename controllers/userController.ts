@@ -334,6 +334,23 @@ class UserController {
         }
     }
 
+    async getMyReferrals(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {user} = req as UserRequest;
+            if (!user) {
+                res.status(401).json({error: true, message: "user_not_found"});
+                return next();
+            }
+            const referrals = await DI.em.find(Users, {referral_id: user.id});
+            res.json({error: false, message: "get_my_referrals_success", referrals});
+            return next();
+        } catch (e) {
+            logger.error(`getMyReferrals: ${e}`);
+            res.status(500).json({error: true, message: e});
+            next();
+        }
+    }
+
     async getMe(req: Request, res: Response, next: NextFunction) {
         try {
             const {user} = req as UserRequest;
