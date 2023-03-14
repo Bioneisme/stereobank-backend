@@ -16,6 +16,8 @@ function generateRandomCode(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+const phoneNumbers = new Set();
+
 class UserController {
     async sendCode(req: Request, res: Response, next: NextFunction) {
         try {
@@ -25,26 +27,27 @@ class UserController {
                 return next();
             }
             const code = generateRandomCode(1000, 9999);
-            logger.info(`sendCode: ${code}`);
-            return axios.post("https://api.turbosms.ua/message/send.json", {
-                "recipients": [phone],
-                "sms": {
-                    "sender": "IT Alarm",
-                    "text": `Your code is: ${code}`
-                }
-            }, {
-                headers: {
-                    Authorization: `Bearer ${TURBO_SMS}`
-                }
-            }).then(async result => {
-                await redis.setEx(phone, EXPIRY_TIME, code.toString());
-                res.json({error: false, message: "code_sent"});
-                return next();
-            }).catch(e => {
-                logger.error(`sendCode: ${e}`);
-                res.status(500).json({error: true, message: e});
-                return next();
-            });
+            res.json({error: false, message: "code_sent"});
+            return next();
+            // return axios.post("https://api.turbosms.ua/message/send.json", {
+            //     "recipients": [phone],
+            //     "sms": {
+            //         "sender": "IT Alarm",
+            //         "text": `Your code is: ${code}`
+            //     }
+            // }, {
+            //     headers: {
+            //         Authorization: `Bearer ${TURBO_SMS}`
+            //     }
+            // }).then(async result => {
+            //     await redis.setEx(phone, EXPIRY_TIME, code.toString());
+            //     res.json({error: false, message: "code_sent"});
+            //     return next();
+            // }).catch(e => {
+            //     logger.error(`sendCode: ${e}`);
+            //     res.status(500).json({error: true, message: e});
+            //     return next();
+            // });
         } catch (e) {
             logger.error(`sendCode: ${e}`);
             res.status(500).json({error: true, message: e});
@@ -52,10 +55,50 @@ class UserController {
         }
     }
 
+    async checkPhone(req: Request, res: Response, next: NextFunction) {
+        try {
+            let {phone} = req.params;
+            if (!phone) {
+                res.status(400).json({error: true, message: "phone_required"});
+                return next();
+            }
+            phone = phone.replace(/[^0-9.]/, '');
+            if (phoneNumbers.has(phone)) {
+                phoneNumbers.delete(phone);
+                res.json({error: false, message: "ok"});
+                return next();
+            }
+            res.status(400).json({error: true, message: "phone_not_found"});
+            return next();
+        } catch (e) {
+            logger.error(`checkPhone: ${e}`);
+            res.status(500).json({error: true, message: e});
+            next();
+        }
+    }
+
+    async callbackCode(req: Request, res: Response, next: NextFunction) {
+        try {
+            console.log(req.body);
+            console.log(phoneNumbers)
+            const {phone_number, select} = req.body;
+            if (select === "1") {
+                phoneNumbers.add(phone_number);
+            }
+
+            res.json({error: false, message: "ok"});
+            return next();
+        } catch (e) {
+            logger.error(`callbackCode: ${e}`);
+            res.status(500).json({error: true, message: e});
+            next();
+        }
+    }
+
     async register(req: Request, res: Response, next: NextFunction) {
         try {
-            const {email, phone, name, password, code} = req.body;
-            if (!phone || !email || !name || !password || !code) {
+            const {email, phone, name, password} = req.body;
+            if (!phone || !email || !name || !password) {
                 res.status(400).json({error: true, message: "missing_fields"});
                 return next();
             }
@@ -66,45 +109,31 @@ class UserController {
                 res.status(400).json({error: true, message: "user_exists"});
                 return next();
             }
-            return redis.get(phone).then(async (result: any) => {
-                if (!result) {
-                    res.status(400).json({error: true, message: "code_not_found_or_expired"});
-                    return next();
-                }
-                if (result !== code) {
-                    res.status(400).json({error: true, message: "invalid_code"});
-                    return next();
-                }
-                const hashedPassword = await hash(password, 12);
-                const user = DI.em.create(Users, {
-                    name,
-                    phone,
-                    email,
-                    caller_id: "",
-                    password: hashedPassword,
-                    promo_code: generatePromo()
-                });
-                await DI.em.persistAndFlush(user);
-
-                const wallet = DI.em.create(Wallets, {
-                    user_id: user.id
-                });
-                await DI.em.persistAndFlush(wallet);
-
-                const tokens = tokenService.generateTokens(user.id);
-                await tokenService.saveToken(user.id, tokens.refreshToken);
-
-                res.cookie("refreshToken", tokens.refreshToken, {
-                    maxAge: 30 * 24 * 60 * 60 * 1000,
-                    httpOnly: true
-                });
-                res.json({error: false, ...tokens, user});
-                return next();
-            }).catch((e: any) => {
-                logger.error(`register: ${e}`);
-                res.status(500).json({error: true, message: e});
-                return next();
+            const hashedPassword = await hash(password, 12);
+            const user = DI.em.create(Users, {
+                name,
+                phone,
+                email,
+                caller_id: "",
+                password: hashedPassword,
+                promo_code: generatePromo()
             });
+            await DI.em.persistAndFlush(user);
+
+            const wallet = DI.em.create(Wallets, {
+                user_id: user.id
+            });
+            await DI.em.persistAndFlush(wallet);
+
+            const tokens = tokenService.generateTokens(user.id);
+            await tokenService.saveToken(user.id, tokens.refreshToken);
+
+            res.cookie("refreshToken", tokens.refreshToken, {
+                maxAge: 30 * 24 * 60 * 60 * 1000,
+                httpOnly: true
+            });
+            res.json({error: false, ...tokens, user});
+            return next();
         } catch (e) {
             logger.error(`register: ${e}`);
             res.status(500).json({error: true, message: e});
