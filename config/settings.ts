@@ -23,6 +23,9 @@ const REDIS_PASSWORD: string = process.env.REDIS_PASSWORD || '';
 const PSP_PUBLIC_KEY: string = process.env.PSP_PUBLIC_KEY || '';
 const PSP_PRIVATE_KEY: string = process.env.PSP_PRIVATE_KEY || '';
 const PSP_BASE_URL: string = process.env.PSP_BASE_URL || '';
+export const SMS_KZ: string = process.env.SMS_KZ as string;
+export const SMS_UK: string = process.env.SMS_UK as string;
+export const SMS_ALL: string = process.env.SMS_ALL as string;
 
 export const REDIS = {
     host: REDIS_HOST,

@@ -5,8 +5,7 @@ import {UserRequest} from "../types";
 import {Tokens, TransactionHistory, Users, Wallets} from "../entities";
 import tokenService from "../services/tokenService";
 import {hash, compare} from "bcryptjs";
-import {redis} from "../config/cache";
-import {EXPIRY_TIME, TURBO_SMS} from "../config/settings";
+import {SERVER_URL, SMS_ALL, SMS_KZ, SMS_UK} from "../config/settings";
 import axios from "axios";
 import generatePromo from "../utils/promo";
 import {wrap} from "@mikro-orm/core";
@@ -21,33 +20,30 @@ const phoneNumbers = new Set();
 class UserController {
     async sendCode(req: Request, res: Response, next: NextFunction) {
         try {
-            const {phone} = req.body;
+            let {phone} = req.body;
             if (!phone) {
                 res.status(400).json({error: true, message: "phone_required"});
                 return next();
             }
-            const code = generateRandomCode(1000, 9999);
-            res.json({error: false, message: "code_sent"});
-            return next();
-            // return axios.post("https://api.turbosms.ua/message/send.json", {
-            //     "recipients": [phone],
-            //     "sms": {
-            //         "sender": "IT Alarm",
-            //         "text": `Your code is: ${code}`
-            //     }
-            // }, {
-            //     headers: {
-            //         Authorization: `Bearer ${TURBO_SMS}`
-            //     }
-            // }).then(async result => {
-            //     await redis.setEx(phone, EXPIRY_TIME, code.toString());
-            //     res.json({error: false, message: "code_sent"});
-            //     return next();
-            // }).catch(e => {
-            //     logger.error(`sendCode: ${e}`);
-            //     res.status(500).json({error: true, message: e});
-            //     return next();
-            // });
+            phone = phone.replace(/[^0-9.]/, '');
+            const API_KEY = phone.substring(0, 2) === '77' ? SMS_KZ : (phone.substring(0, 3) === '380' ? SMS_UK : SMS_ALL);
+            return axios.post("https://my.ittell.com.ua/call_api/call", {
+                "phone_number": phone,
+                options: {
+                    "callback_url": `${SERVER_URL}/api/users/callbackCode`
+                }
+            }, {
+                headers: {
+                    Authorization: `Bearer ${API_KEY}`
+                }
+            }).then(async result => {
+                res.json({error: false, message: "code_sent"});
+                return next();
+            }).catch(e => {
+                logger.error(`sendCode: ${e}`);
+                res.status(500).json({error: true, message: e});
+                return next();
+            });
         } catch (e) {
             logger.error(`sendCode: ${e}`);
             res.status(500).json({error: true, message: e});
@@ -79,8 +75,6 @@ class UserController {
 
     async callbackCode(req: Request, res: Response, next: NextFunction) {
         try {
-            console.log(req.body);
-            console.log(phoneNumbers)
             const {phone_number, select} = req.body;
             if (select === "1") {
                 phoneNumbers.add(phone_number);
